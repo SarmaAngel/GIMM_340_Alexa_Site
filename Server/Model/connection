@@ -1,0 +1,28 @@
+//Libraries
+const mysql = require('mysql2/promise');
+
+let connection = null;
+
+//'async' gives us access to 'await' keyword
+//   'await' is a promise
+async function query(sql, params) {
+    //Singleton DB connection
+    if (null === connection) {
+        //STOP!!! Let's make the batabas connection first
+        connection = await mysql.createConnection({
+            host: "student-databases.cvode4s4cwrc.us-west-2.rds.amazonaws.com",
+            user: "jadenrogers",
+            password: "9LQeoOXGrX4mjGPmWIsBmHd7tcMN8T5bGVt",
+            database: 'jadenrogers',  //CHANGE TO CORRECT INFO FOR ALL OF THIS
+        });
+    }
+
+    //STOP!!! Run this database code first
+    const [results,] = await connection.execute(sql, params);
+    return results;
+}
+
+//Gives access to the query() method
+module.exports = {
+    query
+}
