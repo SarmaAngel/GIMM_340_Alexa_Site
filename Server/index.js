@@ -96,7 +96,7 @@ app.post(
     //Validation for 'platform' field in request
     check('type', 'Please enter the type of product.').isIn(['1', '2', '3', '4', '5', '6']),
 
-    //Validation for 'yearReleased' field in request
+    //Validation for 'amount' field in request
     check('amount', 'Please enter how much of a product there is, between 0 to 10.').isInt({ min: 0, max: 10 }),
 
     //Validation for 'choice' field in request
@@ -134,5 +134,47 @@ app.post(
             return response
                 .status(500) // Error code
                 .json({ message: 'Something went wrong with the server. post' });
+        }
+    });
+
+//This is a PUT request
+app.put(
+    '/goods/:id/', //This is where I do stuff for UPDATE
+    upload.none(),
+
+    // Validation for 'product name' field
+    check('productName', 'Please enter a product name').isLength({ min: 2 }),
+
+    //Validation for 'type' field in request
+    check('type', 'Please enter the type of product.').isIn(['1', '2', '3', '4', '5', '6']),
+
+    //Validation for 'amount' field in request
+    check('amount', 'Please enter how much of a product there is, between 0 to 10.').isInt({ min: 0, max: 10 }),
+
+    //Validation for 'choice' field in request
+    check('isStocked', 'Please enter a choice.').isIn(['yes', 'no']),
+
+    async (request, response) => {
+        // Validate request
+        const errors = validationResult(request);
+        if (!errors.isEmpty()) {
+            return response
+                .status(400) // Error code
+                .json({
+                    message: 'Validation failed.',
+                    errors: errors.array()
+                });
+        }
+
+        let result = {};
+        try {
+            // Update the database
+            result = await goods.edit(request.params.id, request.body);
+            response.json({ message: 'Product updated successfully.', data: result });
+        } catch (error) {
+            console.error(error); // Log the error for debugging
+            return response
+                .status(500) // Error code
+                .json({ message: 'Something went wrong with the server. put' });
         }
     });
