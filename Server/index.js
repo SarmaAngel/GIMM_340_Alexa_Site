@@ -178,3 +178,26 @@ app.put(
                 .json({ message: 'Something went wrong with the server. put' });
         }
     });
+
+//This is a DELETE request
+app.delete(
+    '/goods/:id/',
+    upload.none(),
+    async (request, response) => {
+        let result = {};
+        try {
+            result = await goods.remove(request.params.id);
+        } catch (error) {
+            //The server message error code of 5XXS
+            return response
+                .status(500) //Error code
+                .json({ message: 'Something went wrong with the server.' });
+
+        }
+        //Default response object
+        response.json({ 'data': result });
+    });
+
+app.listen(port, () => {
+    console.log(`Example app listening at http://localhost:${port}`);
+})
