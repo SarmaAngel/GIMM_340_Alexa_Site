@@ -84,3 +84,120 @@ app.get(
         //Default response object
         response.json({ 'data': result });
     });
+
+//This is a POST request
+app.post(
+    '/goods/', //This is where I do stuff for INSERT
+    upload.none(),
+
+    //Validation for 'title' field in request
+    check('productName', 'Please enter the product name').isLength({ min: 2 }),
+
+    //Validation for 'platform' field in request
+    check('type', 'Please enter the type of product.').isIn(['1', '2', '3', '4', '5', '6']),
+
+    //Validation for 'amount' field in request
+    check('amount', 'Please enter how much of a product there is, between 0 to 10.').isInt({ min: 0, max: 10 }),
+
+    //Validation for 'choice' field in request
+    check('isStocked', 'Please enter a choice.').isIn(['yes', 'no']),
+
+    async (request, response) => {
+        // Validate request
+        const errors = validationResult(request);
+        if (!errors.isEmpty()) {
+            return response
+                .status(400) // Error code
+                .setHeader('Access-Control-Allow-Origin', '*') // Prevent CORS error
+                .json({
+                    message: 'Validation failed.',
+                    errors: errors.array()
+                });
+        }
+        let result = {};
+        try {
+            // Insert into database
+            result = await goods.insert(request.body);
+
+            // Add to goodSubmissions array
+            const submission = request.body; // Assuming request.body contains the submission data
+            goodSubmissions.push(submission);
+
+            response
+                .setHeader('Access-Control-Allow-Origin', '*') // Prevent CORS error
+                .json({
+                    message: 'Request fields and files are valid.',
+                    goodSubmissions: goodSubmissions
+                });
+        } catch (error) {
+            console.error(error); // Log the error for debugging
+            return response
+                .status(500) // Error code
+                .json({ message: 'Something went wrong with the server. post' });
+        }
+    });
+
+//This is a PUT request
+app.put(
+    '/goods/:id/', //This is where I do stuff for UPDATE
+    upload.none(),
+
+    // Validation for 'product name' field
+    check('productName', 'Please enter a product name').isLength({ min: 2 }),
+
+    //Validation for 'type' field in request
+    check('type', 'Please enter the type of product.').isIn(['1', '2', '3', '4', '5', '6']),
+
+    //Validation for 'amount' field in request
+    check('amount', 'Please enter how much of a product there is, between 0 to 10.').isInt({ min: 0, max: 10 }),
+
+    //Validation for 'choice' field in request
+    check('isStocked', 'Please enter a choice.').isIn(['yes', 'no']),
+
+    async (request, response) => {
+        // Validate request
+        const errors = validationResult(request);
+        if (!errors.isEmpty()) {
+            return response
+                .status(400) // Error code
+                .json({
+                    message: 'Validation failed.',
+                    errors: errors.array()
+                });
+        }
+
+        let result = {};
+        try {
+            // Update the database
+            result = await goods.edit(request.params.id, request.body);
+            response.json({ message: 'Product updated successfully.', data: result });
+        } catch (error) {
+            console.error(error); // Log the error for debugging
+            return response
+                .status(500) // Error code
+                .json({ message: 'Something went wrong with the server. put' });
+        }
+    });
+
+//This is a DELETE request
+app.delete(
+    '/goods/:id/',
+    upload.none(),
+    async (request, response) => {
+        let result = {};
+        try {
+            result = await goods.remove(request.params.id);
+        } catch (error) {
+            //The server message error code of 5XXS
+            return response
+                .status(500) //Error code
+                .json({ message: 'Something went wrong with the server.' });
+
+        }
+        //Default response object
+        response.json({ 'data': result });
+    });
+
+app.listen(port, () => {
+    console.log(`Example app listening at http://localhost:${port}`);
+})
